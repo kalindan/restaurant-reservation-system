@@ -1,11 +1,19 @@
 # Restaurant booking system
 
+## Restaurant
+
+- Opening hours 10:00-20:00
+- Number of tables 20 (10 x 4 persons, 5 x 2 persons, 5 x 6 persons)
+
 ## Feature requirements
 
 - Customer
   - Register
   - Login
   - Reservation of table
+    - Date
+    - Duration
+    - Number of persons
   - Cancel of reservation
 - Admin
   - Setup of tables
@@ -14,8 +22,13 @@
 
 - UI
   - CLI
+    - Cobra
   - GUI
+    - Fyne
   - WEB
+    - Chi
 - Data storage in PostgreSQL
    - Registered customers
    - Tables
+- App checks actual time and adjusts available dates for next week
+- Logging
