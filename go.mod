@@ -2,4 +2,7 @@ module restaurant-project
 
 go 1.19
 
-require golang.org/x/crypto v0.4.0 // indirect
+require (
+	github.com/google/uuid v1.3.0
+	golang.org/x/crypto v0.4.0
+)

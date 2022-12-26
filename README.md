@@ -21,8 +21,6 @@
 ## Programming requirements
 
 - UI
-  - CLI
-    - Cobra
   - GUI
     - Fyne
   - WEB
@@ -30,5 +28,7 @@
 - Data storage in PostgreSQL
    - Registered customers
    - Tables
+- Caching in Redis
+  - Logged user
 - App checks actual time and adjusts available dates for next week
 - Logging
