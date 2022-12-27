@@ -17,7 +17,7 @@ func NewReservationSystem(dbh DbHandler) *ReservationSystem {
 	rs := &ReservationSystem{
 		dbh: dbh,
 	}
-	log.Printf("New reservation system created")
+	log.Print("New reservation system created")
 	return rs
 }
 
@@ -99,7 +99,7 @@ func (rs *ReservationSystem) MakeReservation(day int, hour int, duration int, pe
 				nr := NewReservation(day, hour, duration, persons, cs.id, table.id)
 				rs.dbh.UpdateTables(tables)
 				rs.dbh.CreateReservation(nr)
-				log.Printf("Reservation made at table %v", table.id)
+				log.Printf("Reservation made at table %v in day %v", table.id, day)
 				return nil
 			}
 		}
@@ -111,15 +111,32 @@ func (rs *ReservationSystem) GetReservations() (*[]byte, error) {
 	if rs.loggedCustomerName == "" {
 		return nil, errors.New("not logged in")
 	}
-	rss, _ := rs.dbh.GetCustomerReservations(rs.loggedCustomerName)
+	cres, _ := rs.dbh.GetCustomerReservations(rs.loggedCustomerName)
 	var msg []byte
 	msg = []byte(fmt.Sprintf("Reservations for customer %v\n", rs.loggedCustomerName))
-	for _, res := range *rss {
-		msg = append(msg, []byte(fmt.Sprintf("Day %v, Hour %v, Duration %v, Persons %v, Table %v\n", res.day, res.hour, res.duration, res.persons, res.tableId))...)
+	for _, res := range *cres {
+		msg = append(msg, []byte(fmt.Sprintf("Day %v, Hour %v, Duration %v, Persons %v, Table %v\n",
+			res.day, res.hour, res.duration, res.persons, res.tableId))...)
 	}
 	return &msg, nil
 }
 
-func (rs *ReservationSystem) CancelReservation(id int) error {
+func (rs *ReservationSystem) CancelReservation(day int, tableId int) error {
+	if rs.loggedCustomerName == "" {
+		return errors.New("not logged in")
+	}
+	res, _ := rs.dbh.GetCustomerReservation(rs.loggedCustomerName, day, tableId)
+	err := rs.dbh.DeleteReservation(rs.loggedCustomerName, day, tableId)
+	if err != nil {
+		return err
+	}
+	table, _ := rs.dbh.GetTable(res.tableId)
+	tHour := res.hour - openingHour
+	tDay := res.day - 1
+	for i := tHour; i < tHour+res.duration; i++ {
+		table.days[tDay][i] = false
+	}
+	rs.dbh.UpdateTable(table)
+	log.Printf("Reservation made at table %v in day %v was cancelled", tableId, day)
 	return nil
 }

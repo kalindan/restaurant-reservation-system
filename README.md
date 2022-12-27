@@ -1,4 +1,4 @@
-# Restaurant booking system
+# Restaurant reservation system
 
 ## Restaurant
 
