@@ -1,16 +1,16 @@
 package reservio
 
-type TempDb struct {
-	customers    []Customer
-	reservations []Reservation
-	tables       []Table
+type tempDb struct {
+	customers    []customer
+	reservations []reservation
+	tables       []table
 }
 
-func NewTempDb(csAmount int, rsvAmount int) *TempDb {
-	tdb := &TempDb{
-		customers:    make([]Customer, csAmount),
-		reservations: make([]Reservation, rsvAmount),
-		tables:       NewTables(),
+func newTempDb(csAmount int, rsvAmount int) *tempDb {
+	tdb := &tempDb{
+		customers:    make([]customer, csAmount),
+		reservations: make([]reservation, rsvAmount),
+		tables:       newTables(),
 	}
 	return tdb
 }
