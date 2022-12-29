@@ -23,12 +23,12 @@
 - UI
   - GUI
     - Fyne
-  - WEB
+  - API
     - Chi
 - Data storage in PostgreSQL
    - Registered customers
    - Tables
 - Caching in Redis
   - Logged user
-- App checks actual time and adjusts available dates for next week
 - Logging
+- Tests

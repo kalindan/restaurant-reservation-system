@@ -2,7 +2,7 @@ package reservio
 
 import "github.com/google/uuid"
 
-type Reservation struct {
+type reservation struct {
 	id         uuid.UUID
 	customerId uuid.UUID
 	tableId    int
@@ -12,8 +12,8 @@ type Reservation struct {
 	persons    int
 }
 
-func NewReservation(day int, hour int, duration int, persons int, customerId uuid.UUID, tableId int) *Reservation {
-	nr := &Reservation{
+func newReservation(day int, hour int, duration int, persons int, customerId uuid.UUID, tableId int) *reservation {
+	nr := &reservation{
 		id:         uuid.New(),
 		customerId: customerId,
 		tableId:    tableId,

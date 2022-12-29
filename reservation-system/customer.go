@@ -2,14 +2,14 @@ package reservio
 
 import "github.com/google/uuid"
 
-type Customer struct {
+type customer struct {
 	id       uuid.UUID
 	name     string
 	password string
 }
 
-func NewCustomer(name string, password string) *Customer {
-	cst := &Customer{
+func newCustomer(name string, password string) *customer {
+	cst := &customer{
 		id:       uuid.New(),
 		name:     name,
 		password: password}

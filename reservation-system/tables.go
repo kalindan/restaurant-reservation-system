@@ -1,14 +1,14 @@
 package reservio
 
 type timeslots []bool
-type Table struct {
+type table struct {
 	id    int
 	seats int
 	days  []timeslots
 }
 
-func NewTables() []Table {
-	tables := make([]Table, tableForTwo+tableForFour+tableForSix)
+func newTables() []table {
+	tables := make([]table, tableForTwo+tableForFour+tableForSix)
 	i := 0
 	for ; i < tableForTwo; i++ {
 		tables[i].id = i
