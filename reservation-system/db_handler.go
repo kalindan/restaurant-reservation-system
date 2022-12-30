@@ -5,7 +5,7 @@ type dbHandler interface {
 	getCustomer(name string) (*customer, error)
 	getTable(id int) (*table, error)
 	getTables() (*[]table, error)
-	updateTable(tables *table) error
+	updateTable(table *table) error
 	createReservation(rs *reservation) error
 	getCustomerReservation(name string, day int, tableId int) (*reservation, error)
 	getCustomerReservations(name string) (*[]reservation, error)

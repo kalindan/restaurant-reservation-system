@@ -81,30 +81,43 @@ func (rs *reservationSystem) MakeReservation(day int, hour int, duration int, pe
 	if persons > maxPersons {
 		return errors.New("invalid amount of persons for reservation")
 	}
-	tDay := day - 1
 	tHour := hour - openingHour
 	cs, err := rs.dbh.getCustomer(rs.loggedCustomerName)
 	if err != nil {
 		return err
 	}
-	tables, _ := rs.dbh.getTables() // place for possible cache
+	tables, err := rs.dbh.getTables() // place for possible cache
+	if err != nil {
+		return err
+	}
 	for _, table := range *tables {
 		if table.seats >= persons {
 			isFree := true
-			for i := tHour; i < tHour+duration; i++ {
-				if table.days[tDay][i] {
-					isFree = false
-					break
+			for _, timeslots := range table.days {
+				for i := tHour; i < tHour+duration; i++ {
+					if timeslots.day == day && timeslots.slots[i] {
+						isFree = false
+						break
+					}
 				}
 			}
 			if isFree {
-				for i := tHour; i < tHour+duration; i++ {
-					table.days[tDay][i] = true
+				for j, timeslots := range table.days {
+					for i := tHour; i < tHour+duration; i++ {
+						if timeslots.day == day {
+							table.days[j].slots[i] = true
+						}
+					}
 				}
-
 				nr := newReservation(day, hour, duration, persons, cs.id, table.id)
-				rs.dbh.updateTable(&table)
-				rs.dbh.createReservation(nr)
+				err := rs.dbh.updateTable(&table)
+				if err != nil {
+					return err
+				}
+				err = rs.dbh.createReservation(nr)
+				if err != nil {
+					return err
+				}
 				log.Printf("Reservation made at table %v in day %v", table.id, day)
 				return nil
 			}
@@ -117,7 +130,10 @@ func (rs *reservationSystem) GetReservations() (*[]byte, error) {
 	if rs.loggedCustomerName == "" {
 		return nil, errors.New("not logged in")
 	}
-	cres, _ := rs.dbh.getCustomerReservations(rs.loggedCustomerName)
+	cres, err := rs.dbh.getCustomerReservations(rs.loggedCustomerName)
+	if err != nil {
+		return nil, err
+	}
 	var msg []byte
 	msg = []byte(fmt.Sprintf("Reservations for customer %v\n", rs.loggedCustomerName))
 	for i, res := range *cres {
@@ -131,18 +147,30 @@ func (rs *reservationSystem) CancelReservation(day int, tableId int) error {
 	if rs.loggedCustomerName == "" {
 		return errors.New("not logged in")
 	}
-	res, _ := rs.dbh.getCustomerReservation(rs.loggedCustomerName, day, tableId)
-	err := rs.dbh.deleteReservation(rs.loggedCustomerName, day, tableId)
+	res, err := rs.dbh.getCustomerReservation(rs.loggedCustomerName, day, tableId)
 	if err != nil {
 		return err
 	}
-	table, _ := rs.dbh.getTable(res.tableId)
-	tHour := res.hour - openingHour
-	tDay := res.day - 1
-	for i := tHour; i < tHour+res.duration; i++ {
-		table.days[tDay][i] = false
+	err = rs.dbh.deleteReservation(rs.loggedCustomerName, day, tableId)
+	if err != nil {
+		return err
 	}
-	rs.dbh.updateTable(table)
+	table, err := rs.dbh.getTable(res.tableId)
+	if err != nil {
+		return err
+	}
+	tHour := res.hour - openingHour
+	for i := tHour; i < tHour+res.duration; i++ {
+		for j, timeslots := range table.days {
+			if timeslots.day == day {
+				table.days[j].slots[i] = false
+			}
+		}
+	}
+	err = rs.dbh.updateTable(table)
+	if err != nil {
+		return err
+	}
 	log.Printf("Reservation made at table %v in day %v was cancelled", tableId, day)
 	return nil
 }

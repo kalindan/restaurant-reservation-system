@@ -54,11 +54,6 @@ func (tdb *tempDbHandler) updateTable(table *table) error {
 	return nil
 }
 
-func (tdb *tempDbHandler) updateTables(tables *[]table) error {
-	tdb.db.tables = *tables
-	return nil
-}
-
 func (tdb *tempDbHandler) createReservation(rs *reservation) error {
 	tdb.db.reservations = append(tdb.db.reservations, *rs)
 	return nil
@@ -83,10 +78,6 @@ func (tdb *tempDbHandler) getCustomerReservations(name string) (*[]reservation, 
 		}
 	}
 	return &rss, nil
-}
-
-func (tdb *tempDbHandler) getAllReservations() (*[]reservation, error) {
-	return &tdb.db.reservations, nil
 }
 
 func (tdb *tempDbHandler) deleteReservation(name string, day int, tableId int) error {
