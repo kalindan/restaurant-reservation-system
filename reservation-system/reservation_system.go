@@ -10,10 +10,10 @@ import (
 
 type reservationSystem struct {
 	loggedCustomerName string
-	dbh                dbHandler
+	dbh                storage
 }
 
-func NewReservationSystem(dbh dbHandler) *reservationSystem {
+func NewReservationSystem(dbh storage) *reservationSystem {
 	rs := &reservationSystem{
 		dbh: dbh,
 	}

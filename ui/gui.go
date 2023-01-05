@@ -14,8 +14,9 @@ import (
 )
 
 func Gui() {
-	//dbh := reservio.NewTempDbHandler(10, 10)
-	dbh, _ := reservio.NewSqliteHandler()
+	//dbh := reservio.NewTempStorage(10, 10)
+	dbh, _ := reservio.NewSqliteStorage()
+	// dbh,_ := reservio.NewComposedStorage()
 	rs := reservio.NewReservationSystem(dbh)
 	a := app.New()
 	w := a.NewWindow("Restaurant reservation system")

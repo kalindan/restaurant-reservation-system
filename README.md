@@ -26,8 +26,8 @@
   - API
     - Chi
 - Data storage in PostgreSQL
-   - Registered customers
-   - Tables
+  - Registered customers
+  - Tables
 - Caching in Redis
   - Logged user
 - Logging

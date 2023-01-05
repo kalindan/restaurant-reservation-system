@@ -48,11 +48,11 @@ const (
 	dbName string = "rs.db"
 )
 
-type sqliteHandler struct {
+type sqliteStorage struct {
 	db *sql.DB
 }
 
-func NewSqliteHandler() (*sqliteHandler, error) {
+func NewSqliteStorage() (*sqliteStorage, error) {
 	var initRstTables bool
 	if _, err := os.Stat(dbName); err != nil {
 		initRstTables = true
@@ -84,13 +84,13 @@ func NewSqliteHandler() (*sqliteHandler, error) {
 			}
 		}
 	}
-	sqhl := &sqliteHandler{
+	sqhl := &sqliteStorage{
 		db: db,
 	}
 	return sqhl, nil
 }
 
-func (sq *sqliteHandler) createCustomer(cs *customer) error {
+func (sq *sqliteStorage) createCustomer(cs *customer) error {
 	_, err := sq.db.Exec("INSERT INTO customers VALUES(?,?,?);", cs.id, cs.name, cs.password)
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (sq *sqliteHandler) createCustomer(cs *customer) error {
 	return nil
 }
 
-func (sq *sqliteHandler) getCustomer(name string) (*customer, error) {
+func (sq *sqliteStorage) getCustomer(name string) (*customer, error) {
 	row := sq.db.QueryRow("SELECT * FROM customers WHERE name=?", name)
 	cs := &customer{}
 	if err := row.Scan(&cs.id, &cs.name, &cs.password); err == sql.ErrNoRows {
@@ -107,7 +107,7 @@ func (sq *sqliteHandler) getCustomer(name string) (*customer, error) {
 	return cs, nil
 }
 
-func (sq *sqliteHandler) getTable(id int) (*table, error) {
+func (sq *sqliteStorage) getTable(id int) (*table, error) {
 	tbRow := sq.db.QueryRow("SELECT id, seats FROM tables WHERE id=?", id)
 	tb := table{}
 	if err := tbRow.Scan(&tb.id, &tb.seats); err == sql.ErrNoRows {
@@ -135,7 +135,7 @@ func (sq *sqliteHandler) getTable(id int) (*table, error) {
 	return &tb, nil
 }
 
-func (sq *sqliteHandler) getTables() (*[]table, error) {
+func (sq *sqliteStorage) getTables() (*[]table, error) {
 	tbRows, err := sq.db.Query("SELECT * FROM tables")
 	if err != nil {
 		return nil, err
@@ -176,7 +176,7 @@ func (sq *sqliteHandler) getTables() (*[]table, error) {
 	return &tables, nil
 }
 
-func (sq *sqliteHandler) updateTable(table *table) error {
+func (sq *sqliteStorage) updateTable(table *table) error {
 	for _, tslts := range table.days {
 		_, err := sq.db.Exec(`UPDATE timeslots SET slot1=?, slot2=?, slot3=?, 
 			slot4=?, slot5=?, slot6=?, slot7=?, slot8=?, slot9=?, slot10=?, 
@@ -191,7 +191,7 @@ func (sq *sqliteHandler) updateTable(table *table) error {
 	return nil
 }
 
-func (sq *sqliteHandler) createReservation(rs *reservation) error {
+func (sq *sqliteStorage) createReservation(rs *reservation) error {
 	_, err := sq.db.Exec("INSERT INTO reservations VALUES(?,?,?,?,?,?,?);", rs.id, rs.customerId,
 		rs.tableId, rs.day, rs.hour, rs.duration, rs.persons)
 	if err != nil {
@@ -200,7 +200,7 @@ func (sq *sqliteHandler) createReservation(rs *reservation) error {
 	return nil
 }
 
-func (sq *sqliteHandler) getCustomerReservation(name string, day int, tableId int) (*reservation, error) {
+func (sq *sqliteStorage) getCustomerReservation(name string, day int, tableId int) (*reservation, error) {
 	cst, err := sq.getCustomer(name)
 	if err != nil {
 		return nil, err
@@ -214,7 +214,7 @@ func (sq *sqliteHandler) getCustomerReservation(name string, day int, tableId in
 	return rsr, nil
 }
 
-func (sq *sqliteHandler) getCustomerReservations(name string) (*[]reservation, error) {
+func (sq *sqliteStorage) getCustomerReservations(name string) (*[]reservation, error) {
 	cst, err := sq.getCustomer(name)
 	if err != nil {
 		return nil, err
@@ -237,7 +237,7 @@ func (sq *sqliteHandler) getCustomerReservations(name string) (*[]reservation, e
 	return &rsrs, nil
 }
 
-func (sq *sqliteHandler) deleteReservation(name string, day int, tableId int) error {
+func (sq *sqliteStorage) deleteReservation(name string, day int, tableId int) error {
 	cst, err := sq.getCustomer(name)
 	if err != nil {
 		return err
