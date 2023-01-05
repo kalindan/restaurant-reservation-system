@@ -8,20 +8,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type reservationSystem struct {
+type ReservationSystem struct {
 	loggedCustomerName string
 	dbh                storage
 }
 
-func NewReservationSystem(dbh storage) *reservationSystem {
-	rs := &reservationSystem{
+func NewReservationSystem(dbh storage) *ReservationSystem {
+	rs := &ReservationSystem{
 		dbh: dbh,
 	}
 	log.Print("New reservation system created")
 	return rs
 }
 
-func (rs *reservationSystem) Register(name string, password string) error {
+func (rs *ReservationSystem) Register(name string, password string) error {
 	if name == "" || password == "" {
 		return errors.New("invalid name or password")
 	}
@@ -42,7 +42,7 @@ func (rs *reservationSystem) Register(name string, password string) error {
 	return nil
 }
 
-func (rs *reservationSystem) Login(name string, password string) error {
+func (rs *ReservationSystem) Login(name string, password string) error {
 	if rs.loggedCustomerName != "" {
 		return errors.New("customer already logged in")
 	}
@@ -59,13 +59,13 @@ func (rs *reservationSystem) Login(name string, password string) error {
 	return nil
 }
 
-func (rs *reservationSystem) Logout() error {
+func (rs *ReservationSystem) Logout() error {
 	log.Printf("Customer %v logged out", rs.loggedCustomerName)
 	rs.loggedCustomerName = ""
 	return nil
 }
 
-func (rs *reservationSystem) MakeReservation(day int, hour int, duration int, persons int) error {
+func (rs *ReservationSystem) MakeReservation(day int, hour int, duration int, persons int) error {
 	if rs.loggedCustomerName == "" {
 		return errors.New("not logged in")
 	}
@@ -126,7 +126,7 @@ func (rs *reservationSystem) MakeReservation(day int, hour int, duration int, pe
 	return errors.New("no available timeslot")
 }
 
-func (rs *reservationSystem) GetReservations() (*[]byte, error) {
+func (rs *ReservationSystem) GetReservations() (*[]byte, error) {
 	if rs.loggedCustomerName == "" {
 		return nil, errors.New("not logged in")
 	}
@@ -143,7 +143,7 @@ func (rs *reservationSystem) GetReservations() (*[]byte, error) {
 	return &msg, nil
 }
 
-func (rs *reservationSystem) CancelReservation(day int, tableId int) error {
+func (rs *ReservationSystem) CancelReservation(day int, tableId int) error {
 	if rs.loggedCustomerName == "" {
 		return errors.New("not logged in")
 	}

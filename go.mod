@@ -9,6 +9,8 @@ require (
 
 require github.com/mattn/go-sqlite3 v1.14.16
 
+require github.com/go-chi/chi/v5 v5.0.8
+
 require (
 	fyne.io/fyne/v2 v2.3.0
 	fyne.io/systray v1.10.1-0.20221115204952-d16a6177e6f1 // indirect

@@ -1,9 +1,10 @@
 package main
 
 import (
-	rsui "restaurant-project/ui"
+	server "restaurant-project/server"
 )
 
 func main() {
-	rsui.Gui()
+	//rsui.Gui()
+	server.Serve()
 }
