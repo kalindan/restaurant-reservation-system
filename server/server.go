@@ -1,24 +1,29 @@
 package server
 
 import (
+	"fmt"
+	"log"
 	"net/http"
-	reservio "restaurant-project/reservation-system"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-type server struct {
-	rs reservio.ReservationSystem
+type reservationServer struct {
+	rtr *chi.Mux
 }
 
-func Serve() {
-	r := chi.NewRouter()
-	strg, _ := reservio.NewSqliteStorage()
-	rs := reservio.NewReservationSystem(strg)
-	r.Use(middleware.Logger)
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World!"))
-	})
-	http.ListenAndServe(":3000", r)
+func NewReservationServer() *reservationServer {
+	sr := &reservationServer{
+		rtr: chi.NewRouter(),
+	}
+	return sr
+}
+
+func (rsrv *reservationServer) Start(port int) {
+	rsrv.rtr.Use(middleware.Logger)
+	rsrv.rtr.Mount("/", newRouter())
+	log.Printf("Reservation server running on port %v", port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", port), rsrv.rtr))
+
 }

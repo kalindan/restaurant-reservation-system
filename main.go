@@ -1,10 +1,9 @@
 package main
 
-import (
-	server "restaurant-project/server"
-)
+import "restaurant-project/server"
 
 func main() {
-	//rsui.Gui()
-	server.Serve()
+	// ui.Gui()
+	server := server.NewReservationServer()
+	server.Start(5000)
 }
