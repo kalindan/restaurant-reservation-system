@@ -45,6 +45,9 @@ const (
 		"slot12"	INTEGER,
 		FOREIGN KEY("tableId") REFERENCES "Table"("id")
 	);`
+	createSessionsTable string = `CREATE TABLE IF NOT EXISTS sessions (
+		"name" TEXT);`
+
 	dbName string = "rs.db"
 )
 
@@ -61,8 +64,9 @@ func NewSqliteStorage() (*sqliteStorage, error) {
 	if err != nil {
 		return nil, err
 	}
-	crArr := [4]string{createCustomersTable, createReservationsTable,
-		createTablesTable, createTimeslotsTable}
+	crArr := [5]string{createCustomersTable, createReservationsTable,
+		createTablesTable, createTimeslotsTable,
+		createSessionsTable}
 	for _, create := range crArr {
 		if _, err := db.Exec(create); err != nil {
 			return nil, err
@@ -83,6 +87,10 @@ func NewSqliteStorage() (*sqliteStorage, error) {
 				}
 			}
 		}
+	}
+	_, err = db.Exec("DELETE FROM sessions")
+	if err != nil {
+		return nil, err
 	}
 	sqhl := &sqliteStorage{
 		db: db,
@@ -247,4 +255,30 @@ func (sq *sqliteStorage) deleteReservation(name string, day int, tableId int) er
 		return err
 	}
 	return nil
+}
+
+func (sq *sqliteStorage) createSession(name string) error {
+	_, err := sq.db.Exec("INSERT INTO sessions VALUES(?);", name)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (sq *sqliteStorage) getSession(name string) error {
+	row := sq.db.QueryRow("SELECT * FROM sessions WHERE name=?", name)
+	if err := row.Scan(); err == sql.ErrNoRows {
+		return errors.New("session not found")
+	}
+	return nil
+
+}
+
+func (sq *sqliteStorage) deleteSession(name string) error {
+	_, err := sq.db.Exec("DELETE FROM sessions WHERE name=?", name)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }

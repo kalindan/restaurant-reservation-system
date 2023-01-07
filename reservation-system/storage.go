@@ -18,8 +18,15 @@ type customerStorage interface {
 	getCustomer(name string) (*customer, error)
 }
 
+type sessionStorage interface {
+	createSession(name string) error
+	getSession(name string) error
+	deleteSession(name string) error
+}
+
 type storage interface {
 	tableStorage
 	reservationStorage
 	customerStorage
+	sessionStorage
 }

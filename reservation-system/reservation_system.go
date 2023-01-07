@@ -9,8 +9,7 @@ import (
 )
 
 type ReservationSystem struct {
-	loggedCustomerName string
-	dbh                storage
+	dbh storage
 }
 
 func NewReservationSystem(dbh storage) *ReservationSystem {
@@ -43,7 +42,7 @@ func (rs *ReservationSystem) Register(name string, password string) error {
 }
 
 func (rs *ReservationSystem) Login(name string, password string) error {
-	if rs.loggedCustomerName != "" {
+	if err := rs.dbh.getSession(name); err == nil {
 		return errors.New("customer already logged in")
 	}
 	cs, err := rs.dbh.getCustomer(name)
@@ -54,20 +53,26 @@ func (rs *ReservationSystem) Login(name string, password string) error {
 	if err != nil {
 		return errors.New("invalid password")
 	}
-	rs.loggedCustomerName = cs.name
-	log.Printf("Customer %v logged in", rs.loggedCustomerName)
+	err = rs.dbh.createSession(name)
+	if err != nil {
+		return err
+	}
+	log.Printf("Customer %v logged in", name)
 	return nil
 }
 
-func (rs *ReservationSystem) Logout() error {
-	log.Printf("Customer %v logged out", rs.loggedCustomerName)
-	rs.loggedCustomerName = ""
+func (rs *ReservationSystem) Logout(name string) error {
+	err := rs.dbh.deleteSession(name)
+	if err != nil {
+		return err
+	}
+	log.Printf("Customer %v logged out", name)
 	return nil
 }
 
-func (rs *ReservationSystem) MakeReservation(day int, hour int, duration int, persons int) error {
-	if rs.loggedCustomerName == "" {
-		return errors.New("not logged in")
+func (rs *ReservationSystem) MakeReservation(name string, day int, hour int, duration int, persons int) error {
+	if err := rs.dbh.getSession(name); err != nil {
+		return err
 	}
 	if day > numOfDays {
 		return errors.New("invalid day for reservation")
@@ -82,7 +87,7 @@ func (rs *ReservationSystem) MakeReservation(day int, hour int, duration int, pe
 		return errors.New("invalid amount of persons for reservation")
 	}
 	tHour := hour - openingHour
-	cs, err := rs.dbh.getCustomer(rs.loggedCustomerName)
+	cs, err := rs.dbh.getCustomer(name)
 	if err != nil {
 		return err
 	}
@@ -126,16 +131,16 @@ func (rs *ReservationSystem) MakeReservation(day int, hour int, duration int, pe
 	return errors.New("no available timeslot")
 }
 
-func (rs *ReservationSystem) GetReservations() (*[]byte, error) {
-	if rs.loggedCustomerName == "" {
-		return nil, errors.New("not logged in")
+func (rs *ReservationSystem) GetReservations(name string) (*[]byte, error) {
+	if err := rs.dbh.getSession(name); err != nil {
+		return nil, err
 	}
-	cres, err := rs.dbh.getCustomerReservations(rs.loggedCustomerName)
+	cres, err := rs.dbh.getCustomerReservations(name)
 	if err != nil {
 		return nil, err
 	}
 	var msg []byte
-	msg = []byte(fmt.Sprintf("Reservations for customer %v\n", rs.loggedCustomerName))
+	msg = []byte(fmt.Sprintf("Reservations for customer %v\n", name))
 	for i, res := range *cres {
 		msg = append(msg, []byte(fmt.Sprintf("Reservation %v: Day %v, Hour %v, Duration %v, Persons %v, Table %v\n",
 			i+1, res.day, res.hour, res.duration, res.persons, res.tableId))...)
@@ -143,15 +148,15 @@ func (rs *ReservationSystem) GetReservations() (*[]byte, error) {
 	return &msg, nil
 }
 
-func (rs *ReservationSystem) CancelReservation(day int, tableId int) error {
-	if rs.loggedCustomerName == "" {
-		return errors.New("not logged in")
+func (rs *ReservationSystem) CancelReservation(name string, day int, tableId int) error {
+	if err := rs.dbh.getSession(name); err != nil {
+		return err
 	}
-	res, err := rs.dbh.getCustomerReservation(rs.loggedCustomerName, day, tableId)
+	res, err := rs.dbh.getCustomerReservation(name, day, tableId)
 	if err != nil {
 		return err
 	}
-	err = rs.dbh.deleteReservation(rs.loggedCustomerName, day, tableId)
+	err = rs.dbh.deleteReservation(name, day, tableId)
 	if err != nil {
 		return err
 	}

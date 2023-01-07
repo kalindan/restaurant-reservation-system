@@ -20,7 +20,7 @@ func Gui() {
 	rs := reservio.NewReservationSystem(dbh)
 	a := app.New()
 	w := a.NewWindow("Restaurant reservation system")
-
+	var loggedName = new(string)
 	//w.Resize(fyne.NewSize(500, 500))
 	options := []string{"1", "2", "3", "4", "5", "6", "7"}
 	hrOptions := []string{"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"}
@@ -39,7 +39,7 @@ func Gui() {
 		persons, _ = strconv.Atoi(value)
 	})
 	btMkRes := widget.NewButton("Make reservation", func() {
-		err := rs.MakeReservation(day, hour, duration, persons)
+		err := rs.MakeReservation(*loggedName, day, hour, duration, persons)
 		if err != nil {
 			log.Print(err)
 			dlg := dialog.NewError(err, w)
@@ -72,6 +72,7 @@ func Gui() {
 			return
 		}
 		w.SetTitle(fmt.Sprintf("Restaurant reservation system - logged customer: %v", name.Text))
+		*loggedName = name.Text
 		name.SetText("")
 		pw.SetText("")
 	})
@@ -85,16 +86,17 @@ func Gui() {
 		}
 	})
 	btLgt := widget.NewButton("Logout", func() {
-		err := rs.Logout()
+		err := rs.Logout(*loggedName)
 		if err != nil {
 			log.Print(err)
 		}
 		w.SetTitle("Restaurant reservation system")
+		*loggedName = ""
 	})
 	cstCnt := container.New(layout.NewVBoxLayout(), name, pw, btLgn, btRgt, btLgt)
 
 	btGt := widget.NewButton("Show reservations", func() {
-		rss, err := rs.GetReservations()
+		rss, err := rs.GetReservations(*loggedName)
 		if err != nil {
 			log.Print(err)
 			dlg := dialog.NewError(err, w)
@@ -116,7 +118,7 @@ func Gui() {
 	txtDayCncl := widget.NewLabel("Day")
 	txtTable := widget.NewLabel("Table")
 	btCncl := widget.NewButton("Cancel reservation", func() {
-		err := rs.CancelReservation(dayCncl, table)
+		err := rs.CancelReservation(*loggedName, dayCncl, table)
 		if err != nil {
 			log.Print(err)
 			dlg := dialog.NewError(err, w)
